@@ -1,14 +1,25 @@
 #include <iostream>
-#include <string>
 #include <vector>
-#include <deque>
+#include <string>
+
 using namespace std;
 namespace ariel
 {
-    struct Node
+
+    class Node
     {
+    public:
+        Node()
+        {
+            txt = "";
+        }
+        Node(string txt)
+        {
+            this->txt = txt;
+            this->childrens = vector<Node *>();
+        }
         string txt;
-        vector<Node> childrens;
+        vector<Node *> childrens;
     };
     class OrgChart
     {
@@ -30,4 +41,5 @@ namespace ariel
         void fill_preorder(Node &);
         vector<string> test;
     };
+
 }
