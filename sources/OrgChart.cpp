@@ -1,112 +1,342 @@
+//
+// Created by Dolev_Lenovo on 22/05/2022.
+//
+
 #include "OrgChart.hpp"
-using namespace std;
-namespace ariel
+#include <stack>
+#include <queue>
+
+using namespace ariel;
+
+void OrgChart::Iterator::generate_begin_reverse_order_iterator(OrgChart::Node *root)
+{
+    /*
+    i had my own implementation for the function but it was not good for the tests
+    i searched the web and used geeksforgeeks implemetation with stack and a queue
+    */
+    // https://www.geeksforgeeks.org/reverse-level-order-traversal/
+    if (root == nullptr)
+    {
+        throw std::out_of_range("not good tree sended");
+    }
+
+    stack<Node *> Stack;
+    queue<Node *> Queue;
+
+    Queue.push(root);
+
+    while (!Queue.empty())
+    {
+        /* Dequeue node and make it root */
+        root = Queue.front();
+        Queue.pop();
+        Stack.push(root);
+        // https://stackoverflow.com/questions/3610933/iterating-c-vector-from-the-end-to-the-beginning
+        /* Enqueue from the right side first */
+        for (auto i = root->children.rbegin(); i != root->children.rend(); ++i)
+        {
+            Queue.push(*i); //
+        }
+    }
+    // Now pop all items from stack one by one and print them
+    while (!Stack.empty())
+    {
+        inner_list.push_back(Stack.top());
+        Stack.pop();
+    }
+}
+
+void OrgChart::Iterator::generate_begin_level_order_iterator(OrgChart::Node *root)
 {
 
-    OrgChart &OrgChart::add_sub(string parent, string child)
+    /*
+  i had my own implementation for the function but it was not good for the tests
+  i searched the web and used geeksforgeeks implemetation with stack and a queue
+  */
+    // https://www.geeksforgeeks.org/level-order-tree-traversal/
+
+    if (root == nullptr)
     {
-        if (parent.compare(this->root->name))
+        throw std::out_of_range("not good tree sended");
+    }
+
+    // Create an empty queue for level order traversal
+    queue<Node *> Queue;
+
+    // Enqueue Root and initialize height
+    Queue.push(root);
+
+    while (!Queue.empty())
+    {
+        // Print front of queue and remove it from queue
+        Node *temp = Queue.front();
+        Queue.pop();
+        inner_list.push_back(temp);
+
+        // Enqueue all children of removed item
+        for (auto i = temp->children.begin(); i != temp->children.end(); ++i)
         {
-            Node *new_node = new Node(child);
-            root.childrens.push_back(new_node);
+            Queue.push(*i);
         }
-        else
-        { /*
-                loop all the childrens of the root
-                and check if the parent is the same as the parent we are looking for
-                if it is the same we add the child to the childrens of the parent
-          */
-            // loop recursivly down the tree
-            // using go_down_tree
-            // and add the child to the childrens of the parent
-            // and return the parent
-            // if the parent is not found we return the root
-            // if the parent is the root we return the root
-            // if the parent is not the root we return the parent
-            // if the parent is not found we return the root
-            go_down_the_tree_and_look_for_parent(root, parent, child);
-        }
+    }
+}
+
+void OrgChart::Iterator::generate_begin_preorder_iterator(OrgChart::Node *root)
+{
+    if (root == nullptr)
+    {
+        throw std::out_of_range("not good tree sended");
+    }
+    // https://www.tutorialspoint.com/data_structures_algorithms/tree_traversal_in_c.htm#
+
+    inner_list.push_back(root);
+
+    // loop over the children and call generate_begin_preorder_iterator on them also
+    for (auto i = root->children.begin(); i != root->children.end(); ++i)
+    {
+        generate_begin_preorder_iterator(*i);
+    }
+}
+
+OrgChart::Iterator::Iterator(OrgChart::Node *root, type_of_request type)
+{
+    if (root == nullptr)
+    {
+        throw std::out_of_range("not good tree sended");
+    }
+    switch (type)
+    {
+    case begin_reverse_order_enum:
+        generate_begin_reverse_order_iterator(root);
+        current = *inner_list.begin();
+        break;
+    case reverse_order_enum:
+        current = end_helper_iterator;
+        break;
+    case begin_level_order_enum:
+        generate_begin_level_order_iterator(root);
+        current = *inner_list.begin();
+        break;
+    case end_level_order_enum:
+        current = end_helper_iterator;
+        break;
+    case begin_preorder_enum:
+        generate_begin_preorder_iterator(root);
+        current = *inner_list.begin();
+        break;
+    case end_preorder_enum:
+        current = end_helper_iterator;
+        break;
+    }
+}
+
+string &OrgChart::Iterator::operator*() const
+{
+    return current->value;
+}
+
+string *OrgChart::Iterator::operator->() const
+{
+    return &(current->value);
+}
+
+OrgChart::Iterator &ariel::OrgChart::Iterator::operator++()
+{
+
+    if (current == end_helper_iterator)
+    {
+        throw std::out_of_range("iterator is out of range");
+    }
+    if (inner_list.empty())
+    {
+        current = end_helper_iterator;
         return *this;
     }
+    inner_list.erase(inner_list.begin());
+    current = *inner_list.begin();
+    return *this;
+}
 
-    void go_down_the_tree_and_look_for_parent(string parent_to_look, Node *root, string child)
+OrgChart::Iterator OrgChart::Iterator::operator++(int)
+{
+    OrgChart::Iterator temp = *this;
+    ++(*this);
+    return temp;
+}
+
+bool OrgChart::Iterator::operator==(const OrgChart::Iterator &other) const
+{
+    return this->current == other.current;
+}
+
+bool OrgChart::Iterator::operator!=(const OrgChart::Iterator &other) const
+{
+    return !(*this == other);
+}
+
+ostream &ariel::operator<<(ostream &os, const ariel::OrgChart &tree)
+{
+    /**
+     * @brief print the tree
+     *
+     *
+     */
+    OrgChart::Iterator it = tree.begin();
+    while (it != tree.end())
     {
-        if (root->txt == parent_to_look)
-        {
-            // we found the parent
-            // now we need to add the child to the childrens of the parent
-            // and we need to return
-            Node *new_node = new Node(child);
-            root.childrens.push_back(new_node);
-            return;
-        }
-        else
-        {
-            // we didnt find the parent
-            // now we need to go down the tree
-            // and look for the parent
-            for (int i = 0; i < root->childrens.size(); i++)
-            {
-                go_down_the_tree_and_look_for_parent(parent_to_look, root->childrens[i], child);
-            }
-        }
+        os << *it << " ";
+        ++it;
     }
-
+    return os;
 }
 
-string *OrgChart::begin_level_order()
-{
-    // create a string array
-    // and return the array
-    // and fill it with the level order
+/**
+ * @brief makeing use of the switch case to make the iterator work
+ *  with the enums
+ * @return OrgChart::Iterator
+ */
 
-    return &test[0];
+OrgChart::Iterator OrgChart::begin() const
+{
+    return Iterator(root_tree, begin_level_order_enum);
 }
 
-
-string *OrgChart::end_level_order()
+OrgChart::Iterator OrgChart::end() const
 {
-    return &test[test.size()];
+    return Iterator(root_tree, end_level_order_enum);
 }
 
-string *OrgChart::begin_reverse_order()
+OrgChart::Iterator OrgChart::begin_reverse_order() const
 {
-    return &test[0];
+    return Iterator(root_tree, begin_reverse_order_enum);
 }
 
-string *OrgChart::reverse_order()
+OrgChart::Iterator OrgChart::reverse_order() const
 {
-    return &test[test.size()];
+    return Iterator(root_tree, reverse_order_enum);
 }
 
-string *OrgChart::begin_preorder()
+OrgChart::Iterator OrgChart::begin_level_order() const
 {
-    return &test[0];
+    return Iterator(root_tree, begin_level_order_enum);
 }
 
-
-OrgChart &OrgChart::add_root(string txt)
+OrgChart::Iterator OrgChart::end_level_order() const
 {
+    return Iterator(root_tree, end_level_order_enum);
+}
 
-    // if root == NULL create root
-    if (root == NULL)
+OrgChart::Iterator OrgChart::begin_preorder() const
+{
+    return Iterator(root_tree, begin_preorder_enum);
+}
+
+OrgChart::Iterator OrgChart::end_preorder() const
+{
+    return Iterator(root_tree, end_preorder_enum);
+}
+
+OrgChart &OrgChart::add_root(const string &vertex_param)
+{
+    /**
+     * @brief Construct a new if object with the given vertex_param
+     *
+     */
+    if (root_tree == nullptr)
     {
-        root = new Node(txt);
+        root_tree = new Node(vertex_param);
     }
-    // else, replace the old root by the new root
     else
     {
-        root->txt = txt;
+        // free the old root and make a new one
+        delete root_tree;
+        root_tree = new Node(vertex_param);
+        // root_tree->value = vertex_param;
     }
     return *this;
 }
 
-string *OrgChart::end_preorder()
+OrgChart &OrgChart::add_sub(const string &exsist, const string &insert_param)
 {
-    return &test[test.size()];
+    Node *found = find_n(exsist, root_tree);
+    if (found == nullptr)
+    {
+        throw invalid_argument("not exist");
+    }
+    if (found->children.empty())
+    {
+        Node *temp = new Node(insert_param);
+        found->children.push_back(temp);
+    }
+    else
+    {
+        Node *temp = new Node(insert_param);
+        found->children.push_back(temp);
+    }
+    return *this;
 }
 
-ostream &operator<<(ostream &os, OrgChart &org)
+OrgChart::OrgChart(const OrgChart &other)
 {
-    return os;
+    /**
+     * @brief copy constructor
+     * @param other
+     */
+
+    root_tree = new Node(other.root_tree->value);
+    for (auto i = other.root_tree->children.begin(); i != other.root_tree->children.end(); ++i)
+    {
+        add_sub(root_tree->value, (*i)->value);
+    }
 }
+
+OrgChart::OrgChart(OrgChart &&other) noexcept
+{
+    /**
+     * @brief move constructor
+     * @param other
+     */
+    root_tree = other.root_tree;
+    other.root_tree = nullptr;
+}
+
+OrgChart &OrgChart::operator=(OrgChart other)
+{
+    /**
+     * @brief move assignment operator
+     * @param other
+     */
+
+    swap(root_tree, other.root_tree);
+    return *this;
+}
+
+OrgChart::Node *OrgChart::find_n(const string &find, OrgChart::Node *node)
+{
+
+    if (node == nullptr)
+    {
+        return nullptr;
+    }
+    if (node->value == find)
+    {
+        return node;
+    }
+
+    for (auto &child : node->children)
+    {
+        Node *found = find_n(find, child);
+        if (found != nullptr)
+        {
+            return found;
+        }
+    }
+    return nullptr;
+}
+
+OrgChart::Node::Node(const string &value)
+{
+
+    this->value = string(value);
+}
+

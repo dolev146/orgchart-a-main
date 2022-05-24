@@ -20,9 +20,6 @@ using namespace ariel;
     OrgChart::end_reverse_order()
     OrgChart::begin_preorder()
     OrgChart::end_preorder()
-    OrgChart::fill_level_order(Node &)
-    OrgChart::fill_reverse_order(Node &)
-    OrgChart::fill_preorder(Node &)
     OrgChart::operator<<(ostream &, OrgChart &)
 
 */
@@ -30,222 +27,83 @@ TEST_CASE("OrgChart::add_root")
 {
     OrgChart org;
     org.add_root("root");
-    CHECK(org.root.txt == "root");
+    CHECK(org.root_tree->value == "root");
     // now add 10 times a diffrent root
     for (int i = 0; i < 10; i++)
     {
         org.add_root("root" + to_string(i));
-        CHECK(org.root.txt == "root" + to_string(i));
+        CHECK(org.root_tree->value == "root" + to_string(i));
     }
 }
 
-/*
-    in add sub , we are testing the following functions:
-    OrgChart::add_sub(string, string)
-    and we are adding a sub to the root
-    and we test to see if it truely added it
-*/
+// /*
+//     in add sub , we are testing the following functions:
+//     OrgChart::add_sub(string, string)
+//     and we are adding a sub to the root
+//     and we test to see if it truely added it
+// */
 TEST_CASE("OrgChart::add_sub")
 {
     OrgChart org;
     org.add_root("root");
     org.add_sub("root", "child");
-    CHECK(1 == 1);
-    // now add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
+
+    for (size_t i = 0; i < 10; i++)
     {
-        org.add_root("root" + to_string(i));
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-        // CHECK(org.root.childrens[i].txt == "child" + to_string(i));
-        CHECK(1 == 1);
+        org.add_sub("root", "child" + to_string(i));
+    }
+
+    for (size_t i = 0; i < 10; i++)
+    {
+        CHECK(org.root_tree->children.at(i)->value.compare("child" + to_string(i)));
     }
 }
 
-/*
-    here we are testing the following functions:
-    OrgChart::begin_level_order()
-    OrgChart::end_level_order()
-    OrgChart::begin_reverse_order()
-    OrgChart::end_reverse_order()
-    OrgChart::begin_preorder()
-    OrgChart::end_preorder()
-    OrgChart::fill_level_order(Node &)
-    OrgChart::fill_reverse_order(Node &)
-    OrgChart::fill_preorder(Node &)
-    OrgChart::operator<<(ostream &, OrgChart &)
-*/
-
-TEST_CASE("organization.begin_preorder()")
+TEST_CASE("Check not throw")
 {
     OrgChart org;
-    org.begin_preorder();
-    CHECK(org.begin_preorder() == org.begin());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
+    CHECK_NOTHROW(org.add_root("root"));
+    CHECK_NOTHROW(org.add_sub("root", "child"));
+
+    for (size_t i = 0; i < 10; i++)
     {
-        org.add_root("root" + to_string(i));
+        CHECK_NOTHROW(org.add_sub("root", "child" + to_string(i)));
     }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
+
+    CHECK_NOTHROW(org.begin_level_order());
+    CHECK_NOTHROW(org.end_level_order());
+    auto start = org.begin_level_order();
+    auto end = org.end_level_order();
+
+    for (auto it = start; it != end; ++it)
     {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
+        CHECK_NOTHROW(*it);
     }
-    // check the sub with
-    CHECK(1 == 1);
+
+    CHECK_NOTHROW(org.begin_reverse_order());
+    CHECK_NOTHROW(org.reverse_order());
+    auto start_rev = org.begin_reverse_order();
+    auto end_rev = org.reverse_order();
+
+    for (auto it = start_rev; it != end_rev; ++it)
+    {
+        CHECK_NOTHROW(*it);
+    }
+
+    CHECK_NOTHROW(org.begin_preorder());
+    CHECK_NOTHROW(org.end_preorder());
+    auto start_pre = org.begin_preorder();
+    auto end_pre = org.end_preorder();
+
+    for (auto it = start_pre; it != end_pre; ++it)
+    {
+        CHECK_NOTHROW(*it);
+    }
 }
 
-TEST_CASE("organization.begin_reverse_order()")
+TEST_CASE("Tree good valaues check")
 {
-    OrgChart org;
-    org.begin_reverse_order();
-    CHECK(org.begin_reverse_order() == org.begin_reverse_order());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_root("root" + to_string(i));
-    }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-    }
-    // check the sub with
-    CHECK(1 == 1);
-}
+    
 
-TEST_CASE("organization.reverse_order()")
-{
-    OrgChart org;
-    org.reverse_order();
-    CHECK(org.reverse_order() == org.reverse_order());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_root("root" + to_string(i));
-    }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-    }
-    // check the sub with
-    CHECK(1 == 1);
-}
-
-TEST_CASE("organization.begin_level_order()")
-{
-    OrgChart org;
-    org.begin_level_order();
-    CHECK(org.begin_level_order() == org.begin_level_order());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_root("root" + to_string(i));
-    }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-    }
-    // check the sub with
-    CHECK(1 == 1);
-}
-
-TEST_CASE("organization.end_level_order()")
-{
-    OrgChart org;
-    org.end_level_order();
-    CHECK(org.end_level_order() == org.end_level_order());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_root("root" + to_string(i));
-    }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-    }
-    // check the sub with
-    CHECK(1 == 1);
-}
-TEST_CASE("organization.begin_preorder()")
-{
-    OrgChart org;
-    org.begin_preorder();
-    CHECK(org.begin_preorder() == org.begin_preorder());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_root("root" + to_string(i));
-    }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-    }
-    // check the sub with
-    CHECK(1 == 1);
-}
-TEST_CASE("organization.end_preorder()")
-{
-    OrgChart org;
-    org.end_preorder();
-    CHECK(org.end_preorder() == org.end_preorder());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_root("root" + to_string(i));
-    }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-    }
-    // check the sub with
-    CHECK(1 == 1);
-}
-
-
-
-
-TEST_CASE("OrgChart")
-{
-
-    OrgChart org;
-    org.end_preorder();
-    CHECK(org.end_preorder() == org.end_preorder());
-    // add root
-    org.add_root("root");
-    // add 10 times a diffrent root
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_root("root" + to_string(i));
-    }
-    for (int i = 0; i < 50; i++)
-    {
-        CHECK(true);
-    }
-    // add 10 times a diffrent sub
-    for (int i = 0; i < 10; i++)
-    {
-        org.add_sub("root" + to_string(i), "child" + to_string(i));
-    }
-    // check the sub with
-    CHECK(1 == 1);
-    int j = 0;
+    
 }
