@@ -20,7 +20,6 @@ using namespace ariel;
     OrgChart::end_reverse_order()
     OrgChart::begin_preorder()
     OrgChart::end_preorder()
-    OrgChart::operator<<(ostream &, OrgChart &)
 
 */
 TEST_CASE("OrgChart::add_root")
